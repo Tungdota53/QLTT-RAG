@@ -1,0 +1,46 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SafeZone Identity API",
+    "version": "0.1.0",
+    "description": "Minimal identity read contract. Locality claims are filtering context and never an authorization grant."
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "paths": {
+    "/v1/identity/me": {
+      "get": {
+        "operationId": "getCurrentIdentity",
+        "summary": "Return the authenticated actor's public-safe identity projection",
+        "parameters": [{ "$ref": "common.openapi.json#/components/parameters/CorrelationId" }],
+        "responses": {
+          "200": {
+            "description": "Public-safe identity projection",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IdentityProjection" } } }
+          },
+          "403": { "$ref": "common.openapi.json#/components/responses/Forbidden" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "IdentityProjection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["actor_id", "actor_type", "locality_scopes"],
+        "properties": {
+          "actor_id": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" },
+          "actor_type": { "type": "string", "enum": ["citizen", "officer", "service"] },
+          "display_name": { "type": "string", "minLength": 1, "maxLength": 120, "description": "Optional public-safe label; never an email, phone number, or legal identity record." },
+          "locality_scopes": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "$ref": "common.openapi.json#/components/schemas/LocalityScope" },
+            "description": "Filtering context only. The server independently authorizes every operation; possession of a locality scope does not grant access."
+          }
+        },
+        "description": "Data-minimized projection. Authentication credentials, contact details, precise location, and household data are excluded."
+      }
+    }
+  }
+}

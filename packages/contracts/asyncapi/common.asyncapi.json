@@ -1,0 +1,272 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "SafeZone Common Event Contract",
+    "version": "0.1.0",
+    "description": "Reusable event envelope and at-least-once delivery semantics only. This document defines no business channels or events."
+  },
+  "defaultContentType": "application/json",
+  "channels": {},
+  "operations": {},
+  "components": {
+    "messages": {
+      "CommonEvent": {
+        "name": "CommonEvent",
+        "title": "SafeZone versioned event",
+        "summary": "An immutable fact emitted after the owning producer commits business state.",
+        "contentType": "application/json",
+        "payload": {
+          "$ref": "#/components/schemas/EventEnvelope"
+        }
+      }
+    },
+    "schemas": {
+      "OpaqueIdentifier": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+        "description": "Opaque identifier whose value carries no consumer-visible semantics."
+      },
+      "SemanticVersion": {
+        "type": "string",
+        "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+        "description": "Payload schema version. Breaking semantics require a new major version and approved migration window."
+      },
+      "EventEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "event_type",
+          "schema_version",
+          "aggregate_id",
+          "aggregate_version",
+          "occurred_at",
+          "received_at",
+          "source",
+          "trace_id",
+          "data"
+        ],
+        "properties": {
+          "event_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "event_type": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 160,
+            "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9_]*)+$",
+            "description": "Stable fact name. A producer must not reuse a name with changed semantics."
+          },
+          "schema_version": {
+            "$ref": "#/components/schemas/SemanticVersion"
+          },
+          "aggregate_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "aggregate_version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Monotonic owner-assigned version used to detect duplicate, reorder, and gaps per aggregate."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time the fact was committed by the owning producer, including timezone."
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time the event entered the messaging boundary, including timezone."
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$",
+            "description": "Stable producer identity, not an official-source authorization claim."
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "data": {
+            "type": "object",
+            "description": "Versioned business payload defined by a concrete event contract. It must contain only data required by identified consumers."
+          }
+        },
+        "description": "Consumers deduplicate by event_id and apply aggregate versions idempotently. Unknown optional payload fields are ignored."
+      },
+      "DeliveryPolicy": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "delivery_guarantee",
+          "deduplication_key",
+          "ordering_key",
+          "max_attempts",
+          "initial_backoff_seconds",
+          "max_backoff_seconds",
+          "backoff_multiplier",
+          "dead_letter_on_exhaustion"
+        ],
+        "properties": {
+          "delivery_guarantee": {
+            "type": "string",
+            "const": "at_least_once"
+          },
+          "deduplication_key": {
+            "type": "string",
+            "const": "event_id"
+          },
+          "ordering_key": {
+            "type": "string",
+            "const": "aggregate_id"
+          },
+          "max_attempts": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 20
+          },
+          "initial_backoff_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 300
+          },
+          "max_backoff_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600
+          },
+          "backoff_multiplier": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "dead_letter_on_exhaustion": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "description": "Producer state and outbox are committed atomically. Consumers use an inbox and bounded exponential backoff; retry never changes event identity."
+      },
+      "DeadLetterMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_id",
+          "event_type",
+          "schema_version",
+          "aggregate_id",
+          "failed_at",
+          "attempt_count",
+          "reason_code",
+          "consumer",
+          "trace_id"
+        ],
+        "properties": {
+          "event_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "event_type": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 160
+          },
+          "schema_version": {
+            "$ref": "#/components/schemas/SemanticVersion"
+          },
+          "aggregate_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "failed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attempt_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "reason_code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+            "description": "Safe machine-readable reason; never an exception stack or raw payload."
+          },
+          "consumer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          }
+        },
+        "description": "Privacy-safe metadata for investigation and controlled replay. The original broker record is retained under access control; payload bytes are not copied into logs or reason fields."
+      },
+      "ConsumerCheckpoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "consumer",
+          "event_id",
+          "aggregate_id",
+          "aggregate_version",
+          "processed_at",
+          "outcome"
+        ],
+        "properties": {
+          "consumer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "event_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "aggregate_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "aggregate_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "processed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "applied",
+              "duplicate_ignored",
+              "reorder_deferred",
+              "gap_detected",
+              "dead_lettered"
+            ]
+          }
+        },
+        "description": "Inbox/checkpoint semantics. A gap stops application for the affected aggregate until reconciliation; consumers never infer missing state."
+      }
+    }
+  },
+  "x-safezone-delivery-policy": {
+    "$ref": "#/components/schemas/DeliveryPolicy"
+  },
+  "x-safezone-contract-rules": {
+    "producer_commit": "business_state_and_outbox_in_one_local_transaction",
+    "consumer_state": "inbox_and_projection_in_one_local_transaction",
+    "duplicate_handling": "deduplicate_by_event_id",
+    "reorder_handling": "defer_by_aggregate_version",
+    "gap_handling": "stop_aggregate_and_reconcile_with_owner",
+    "replay_handling": "preserve_event_id_and_suppress_duplicate_side_effects",
+    "breaking_change": "new_major_schema_and_approved_migration_window",
+    "forbidden_event_semantics": [
+      "ai.evacuation_ordered",
+      "ai.road_closed",
+      "ai.report_verified",
+      "ai.team_dispatched",
+      "ai.risk_rule_activated"
+    ]
+  }
+}

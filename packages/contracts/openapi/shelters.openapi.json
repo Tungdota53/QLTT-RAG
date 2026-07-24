@@ -1,0 +1,57 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "SafeZone Shelters API", "version": "0.1.0", "description": "Public-safe shelter projections with explicit authority, verification, freshness, and stale state." },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "paths": {
+    "/v1/shelters": {
+      "get": {
+        "operationId": "listPublicShelters",
+        "summary": "List public-safe shelters without resident or contact data",
+        "parameters": [
+          { "$ref": "common.openapi.json#/components/parameters/CorrelationId" },
+          { "$ref": "common.openapi.json#/components/parameters/PageCursor" },
+          { "$ref": "common.openapi.json#/components/parameters/PageLimit" }
+        ],
+        "responses": { "200": { "description": "Shelters including explicit stale representations", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublicShelterPage" } } } } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PublicShelter": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["shelter_id", "name", "locality", "official_status", "freshness_status", "verification"],
+        "properties": {
+          "shelter_id": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "locality": { "$ref": "common.openapi.json#/components/schemas/LocalityScope" },
+          "official_status": { "type": "string", "enum": ["official", "not_official"], "description": "May be official only when verification includes authority, source, verified_at, and a non-expired freshness window." },
+          "freshness_status": { "type": "string", "enum": ["current", "stale"], "description": "Stale records must not be presented as current, even when previously official." },
+          "verification": { "$ref": "#/components/schemas/ShelterVerification" },
+          "public_location_description": { "type": "string", "minLength": 1, "maxLength": 500, "description": "Public-safe location description; excludes resident, private contact, and check-in data." }
+        }
+      },
+      "ShelterVerification": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["authority_name", "source_uri", "verified_at", "fresh_until"],
+        "properties": {
+          "authority_name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "source_uri": { "type": "string", "format": "uri" },
+          "verified_at": { "type": "string", "format": "date-time" },
+          "fresh_until": { "type": "string", "format": "date-time", "description": "After this instant the shelter representation is stale and cannot be shown as current official." }
+        }
+      },
+      "PublicShelterPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "page"],
+        "properties": {
+          "items": { "type": "array", "maxItems": 100, "items": { "$ref": "#/components/schemas/PublicShelter" } },
+          "page": { "$ref": "common.openapi.json#/components/schemas/PageMetadata" }
+        }
+      }
+    }
+  }
+}
