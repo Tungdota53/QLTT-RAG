@@ -19,7 +19,8 @@ Chỉ thực hiện Citizen PWA, Operations Console, frontend packages, offline 
 | Wave | Task IDs | Điều kiện | Kết quả khóa |
 |---|---|---|---|
 | W0 | M2-005 | G1 + task packet; không cần SDK | IA/user-flow artifacts trong `docs/ux/**` |
-| W1 | M2-001→M2-006 | SDK/mock 0.1.0 | Product foundation |
+| W1A | M2-002→M2-004, M2-006 | Coordinator workspace baseline; không cần SDK | Presentation/test foundation |
+| W1B | M2-001 | SDK/mock 0.1.0 | Generated SDK client foundation |
 | W2 | M2-101→M2-106 | SDK/mock 0.2.0 | Alert/map slice |
 | W3A | M2-201→M2-210 | W2 | Household/offline/preferences package |
 | W3B | M2-301→M2-308 | SDK/mock 0.3.0 + offline base | Reporting/assistance slice |
@@ -46,7 +47,7 @@ M2-005 có thể hoàn thành trước W1 vì chỉ tạo IA/user-flow documenta
 ## M2-00 — Design system và contract consumer
 
 **Thời gian:** Tuần 1–4  
-**Phụ thuộc:** SDK/mock `0.1.0`, ngoại trừ M2-005 chỉ cần G1 và task packet được coordinator duyệt.
+**Phụ thuộc:** M2-001 cần SDK/mock `0.1.0`. M2-002, M2-003, M2-004 và M2-006 chỉ cần coordinator workspace baseline vì không dùng API DTO. M2-005 chỉ cần G1 và task packet được coordinator duyệt.
 
 - [ ] M2-001: API client wrapper dùng generated SDK; auth/error/loading/offline states.
 - [ ] M2-002: Design tokens và accessible component primitives.
