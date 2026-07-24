@@ -1,0 +1,1 @@
+"""Contract foundation tests."""
