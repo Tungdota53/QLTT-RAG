@@ -18,6 +18,7 @@ Chỉ thực hiện Citizen PWA, Operations Console, frontend packages, offline 
 
 | Wave | Task IDs | Điều kiện | Kết quả khóa |
 |---|---|---|---|
+| W0 | M2-005 | G1 + task packet; không cần SDK | IA/user-flow artifacts trong `docs/ux/**` |
 | W1 | M2-001→M2-006 | SDK/mock 0.1.0 | Product foundation |
 | W2 | M2-101→M2-106 | SDK/mock 0.2.0 | Alert/map slice |
 | W3A | M2-201→M2-210 | W2 | Household/offline/preferences package |
@@ -28,7 +29,7 @@ Chỉ thực hiện Citizen PWA, Operations Console, frontend packages, offline 
 | W5C | M2-801→M2-819 | SDK/mock 0.5.0 | Administration/operations UX |
 | W6 | M2-701→M2-708 + M2-820→M2-826 | SDK 1.0.0-rc + backend RC | Frontend RC |
 
-W3A và W4 có thể xen kẽ nếu không sửa cùng package UI/map. W5A và W5B có thể song song khi evaluation dataset và app source được giao file scope riêng.
+M2-005 có thể hoàn thành trước W1 vì chỉ tạo IA/user-flow documentation, không gọi API, không tạo DTO và không scaffold app. Khi W1 bắt đầu, M2-005 đã hoàn thành được bỏ khỏi range còn lại. W3A và W4 có thể xen kẽ nếu không sửa cùng package UI/map. W5A và W5B có thể song song khi evaluation dataset và app source được giao file scope riêng.
 
 ## Task manifest áp dụng cho từng Task ID
 
@@ -45,13 +46,13 @@ W3A và W4 có thể xen kẽ nếu không sửa cùng package UI/map. W5A và W
 ## M2-00 — Design system và contract consumer
 
 **Thời gian:** Tuần 1–4  
-**Phụ thuộc:** SDK/mock `0.1.0`.
+**Phụ thuộc:** SDK/mock `0.1.0`, ngoại trừ M2-005 chỉ cần G1 và task packet được coordinator duyệt.
 
 - [ ] M2-001: API client wrapper dùng generated SDK; auth/error/loading/offline states.
 - [ ] M2-002: Design tokens và accessible component primitives.
 - [ ] M2-003: Source badges cho official/system/community.
 - [ ] M2-004: Verified/unverified/stale/last-updated states.
-- [ ] M2-005: Citizen và Operations information architecture/user flows.
+- [ ] M2-005: Citizen và Operations information architecture/user flows trong `docs/ux/**`; không scaffold app, gọi API hoặc định nghĩa DTO.
 - [ ] M2-006: Unit/component/accessibility test setup trong vùng ownership.
 
 **Acceptance:** không có API DTO tự định nghĩa; components dùng keyboard/screen reader được; mọi loại nguồn phân biệt rõ.

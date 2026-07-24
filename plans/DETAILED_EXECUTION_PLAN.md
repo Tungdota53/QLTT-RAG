@@ -34,7 +34,7 @@ Critical blockers: source authorization, operator RACI, SDK generation, verified
 
 | Sprint | Gate mục tiêu | Model 1 | Model 2 | Handoff/exit bắt buộc |
 |---|---|---|---|---|
-| S01 | G0/G1 | M1-001, M1-002 | UX research/IA only; chưa API code | ADR, baseline, ownership CI, source/legal register |
+| S01 | G0/G1 | M1-001, M1-002 | M2-005 UX/IA only; chưa API code | ADR, baseline, ownership CI, source/legal register, IA artifacts |
 | S02 | G2 | M1-003→M1-006 | Chờ SDK; chuẩn bị a11y/device matrix | SDK/mock 0.1.0, contract smoke pass |
 | S03 | G3 prep | M1-101→M1-103 | M2-001→M2-003 | Auth/error/source primitives chạy với mock |
 | S04 | G3 prep | M1-104→M1-108 | M2-004→M2-006 | Identity/privacy slice và frontend test base |
