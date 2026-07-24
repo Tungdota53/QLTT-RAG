@@ -1,0 +1,302 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SafeZone Common HTTP Contract",
+    "version": "0.1.0",
+    "description": "Reusable HTTP components only. This document defines no business endpoints."
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "paths": {},
+  "components": {
+    "headers": {
+      "CorrelationId": {
+        "description": "Opaque identifier used to correlate requests, logs, and traces. It must not contain personal data.",
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueIdentifier"
+        }
+      },
+      "IdempotencyKey": {
+        "description": "Opaque client-generated key for replay-safe commands. Reusing a key with a materially different request must return an idempotency conflict.",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._~-]+$"
+        }
+      },
+      "IdempotencyReplayed": {
+        "description": "True when the response is the stored logical result of an earlier request using the same idempotency key.",
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    "parameters": {
+      "CorrelationId": {
+        "name": "X-Correlation-ID",
+        "in": "header",
+        "required": false,
+        "description": "Optional caller correlation identifier. The server returns the effective identifier in the response.",
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueIdentifier"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "description": "Required on commands whose retry could otherwise duplicate a side effect. Reusing the key with a materially different request returns an idempotency conflict.",
+        "schema": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._~-]+$"
+        }
+      },
+      "PageCursor": {
+        "name": "page_cursor",
+        "in": "query",
+        "required": false,
+        "description": "Opaque continuation cursor returned by the server. Clients must not parse or construct it.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "PageLimit": {
+        "name": "page_limit",
+        "in": "query",
+        "required": false,
+        "description": "Maximum number of items requested for one page.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "The request is malformed or violates a contract constraint.",
+        "headers": {
+          "X-Correlation-ID": {
+            "$ref": "#/components/headers/CorrelationId"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "The actor is not authorized for the requested action, locality, or purpose.",
+        "headers": {
+          "X-Correlation-ID": {
+            "$ref": "#/components/headers/CorrelationId"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            }
+          }
+        }
+      },
+      "IdempotencyConflict": {
+        "description": "The idempotency key was already used with a materially different request.",
+        "headers": {
+          "X-Correlation-ID": {
+            "$ref": "#/components/headers/CorrelationId"
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "OpaqueIdentifier": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+        "description": "Opaque identifier. Consumers must not infer semantics from its value."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code",
+          "correlation_id"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri-reference",
+            "description": "Stable documentation URI identifying the problem type."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+            "description": "Stable machine-readable error code."
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Safe human-readable detail that must not expose secrets or sensitive payloads."
+          },
+          "instance": {
+            "type": "string",
+            "format": "uri-reference"
+          },
+          "correlation_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "errors": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
+          }
+        }
+      },
+      "FieldError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "code"
+        ],
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "JSON Pointer or stable field name; never a submitted value."
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "PageMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_size",
+          "has_more"
+        ],
+        "properties": {
+          "page_size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "Opaque cursor for the next page, or null when no subsequent page exists."
+          }
+        }
+      },
+      "LocalityScope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "locality_id",
+          "level"
+        ],
+        "properties": {
+          "locality_id": {
+            "$ref": "#/components/schemas/OpaqueIdentifier"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "province",
+              "district",
+              "commune"
+            ]
+          }
+        },
+        "description": "Authorization and filtering scope. Possession of this value does not itself grant access."
+      },
+      "IdempotencyRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key_fingerprint",
+          "request_fingerprint",
+          "state",
+          "created_at",
+          "expires_at"
+        ],
+        "properties": {
+          "key_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "SHA-256 fingerprint; the raw idempotency key must not be logged or emitted."
+          },
+          "request_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "completed",
+              "failed_retryable"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Internal semantic contract for replay handling; it is not a public persistence model."
+      }
+    }
+  }
+}
