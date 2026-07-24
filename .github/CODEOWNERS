@@ -1,0 +1,28 @@
+# Coordinator-owned shared files
+/README.md @Tungdota53
+/.gitignore @Tungdota53
+/.editorconfig @Tungdota53
+/.env.example @Tungdota53
+/.github/workflows/ @Tungdota53
+/plans/ @Tungdota53
+
+# Model 1 ownership
+/services/ @Tungdota53
+/packages/contracts/ @Tungdota53
+/packages/sdk-typescript/ @Tungdota53
+/infra/ @Tungdota53
+/docs/architecture/ @Tungdota53
+/docs/governance/ @Tungdota53
+/tests/backend/ @Tungdota53
+/tests/integration/ @Tungdota53
+/tests/load/ @Tungdota53
+/tests/security/ @Tungdota53
+
+# Model 2 ownership
+/apps/ @Tungdota53
+/packages/ui/ @Tungdota53
+/packages/offline/ @Tungdota53
+/docs/ux/ @Tungdota53
+/tests/frontend/ @Tungdota53
+/tests/e2e/ @Tungdota53
+/evaluation/ @Tungdota53
