@@ -1,0 +1,91 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SafeZone Official Alerts API",
+    "version": "0.1.0",
+    "description": "Read-only, public-safe official alert contract. Official source content is immutable; corrections and cancellations are linked versions."
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "paths": {
+    "/v1/official-alerts": {
+      "get": {
+        "operationId": "listOfficialAlerts",
+        "summary": "List public-safe official alerts",
+        "parameters": [
+          { "$ref": "common.openapi.json#/components/parameters/CorrelationId" },
+          { "$ref": "common.openapi.json#/components/parameters/PageCursor" },
+          { "$ref": "common.openapi.json#/components/parameters/PageLimit" }
+        ],
+        "responses": {
+          "200": { "description": "Official alerts", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OfficialAlertPage" } } } },
+          "400": { "$ref": "common.openapi.json#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/v1/official-alerts/{alert_id}": {
+      "get": {
+        "operationId": "getOfficialAlert",
+        "summary": "Get one immutable official alert version",
+        "parameters": [
+          { "$ref": "common.openapi.json#/components/parameters/CorrelationId" },
+          { "name": "alert_id", "in": "path", "required": true, "schema": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" } }
+        ],
+        "responses": {
+          "200": { "description": "Official alert version", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OfficialAlert" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "InformationKind": {
+        "type": "string",
+        "enum": ["official_alert", "system_analysis", "community_report"],
+        "description": "Mandatory provenance class. These classes must never be presented as interchangeable."
+      },
+      "OfficialAlert": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["alert_id", "information_kind", "version_id", "version_number", "lifecycle", "source", "content", "content_hash", "issued_at", "effective_at"],
+        "properties": {
+          "alert_id": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" },
+          "information_kind": { "const": "official_alert" },
+          "version_id": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" },
+          "version_number": { "type": "integer", "minimum": 1 },
+          "previous_version_id": { "oneOf": [{ "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" }, { "type": "null" }] },
+          "supersedes_version_id": { "oneOf": [{ "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" }, { "type": "null" }] },
+          "lifecycle": { "type": "string", "enum": ["issued", "updated", "corrected", "cancelled", "expired"] },
+          "source": { "$ref": "#/components/schemas/OfficialAlertSource" },
+          "content": { "type": "string", "minLength": 1, "maxLength": 20000, "description": "Verbatim immutable official source content; system-generated interpretation must not be inserted or rewritten here." },
+          "content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "SHA-256 of the immutable official content bytes." },
+          "issued_at": { "type": "string", "format": "date-time" },
+          "effective_at": { "type": "string", "format": "date-time" },
+          "expires_at": { "type": ["string", "null"], "format": "date-time" },
+          "affected_localities": { "type": "array", "maxItems": 1000, "items": { "$ref": "common.openapi.json#/components/schemas/LocalityScope" } }
+        }
+      },
+      "OfficialAlertSource": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "authority_name", "source_uri", "retrieved_at", "signature_status"],
+        "properties": {
+          "source_id": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" },
+          "authority_name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "source_uri": { "type": "string", "format": "uri" },
+          "retrieved_at": { "type": "string", "format": "date-time" },
+          "signature_status": { "type": "string", "enum": ["valid", "invalid", "not_provided", "not_checked"] },
+          "source_message_id": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" }
+        }
+      },
+      "OfficialAlertPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "page"],
+        "properties": {
+          "items": { "type": "array", "maxItems": 100, "items": { "$ref": "#/components/schemas/OfficialAlert" } },
+          "page": { "$ref": "common.openapi.json#/components/schemas/PageMetadata" }
+        }
+      }
+    }
+  }
+}

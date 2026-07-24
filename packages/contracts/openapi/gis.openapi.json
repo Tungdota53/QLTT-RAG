@@ -1,0 +1,56 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "SafeZone GIS API", "version": "0.1.0", "description": "Public-safe administrative locality geometry; no routing or road-state claims." },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "paths": {
+    "/v1/localities/{locality_id}": {
+      "get": {
+        "operationId": "getPublicLocality",
+        "summary": "Get a public administrative locality projection",
+        "parameters": [
+          { "$ref": "common.openapi.json#/components/parameters/CorrelationId" },
+          { "name": "locality_id", "in": "path", "required": true, "schema": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" }, "description": "Filtering identifier only; it is not proof of authorization." }
+        ],
+        "responses": { "200": { "description": "Public locality", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublicLocality" } } } } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PublicLocality": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["locality", "name", "geometry", "dataset_source", "updated_at"],
+        "properties": {
+          "locality": { "$ref": "common.openapi.json#/components/schemas/LocalityScope" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "geometry": { "$ref": "#/components/schemas/PublicGeometry" },
+          "dataset_source": { "$ref": "#/components/schemas/GisDatasetSource" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        },
+        "description": "Administrative-area projection only; excludes household points, exact user locations, inferred danger zones, and routing assertions."
+      },
+      "PublicGeometry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "coordinates"],
+        "properties": {
+          "type": { "type": "string", "enum": ["Polygon", "MultiPolygon"] },
+          "coordinates": { "type": "array", "minItems": 1, "maxItems": 10000, "items": {} }
+        },
+        "description": "GeoJSON-compatible administrative geometry in WGS 84 (EPSG:4326)."
+      },
+      "GisDatasetSource": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dataset_id", "version", "source_uri", "published_at"],
+        "properties": {
+          "dataset_id": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" },
+          "version": { "$ref": "common.openapi.json#/components/schemas/OpaqueIdentifier" },
+          "source_uri": { "type": "string", "format": "uri" },
+          "published_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}
