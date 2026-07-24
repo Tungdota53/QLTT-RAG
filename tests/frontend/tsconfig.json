@@ -9,12 +9,17 @@
     "noUnusedParameters": true,
     "jsx": "react-jsx",
     "lib": ["DOM", "ES2022"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "target": "ES2022",
     "types": ["vitest/globals", "@testing-library/jest-dom"],
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../../apps/citizen/components/**/*.tsx",
+    "vitest.config.ts"
+  ]
 }
