@@ -1,0 +1,57 @@
+{
+  "identity": {
+    "actor_id": "actor.synthetic.001",
+    "actor_type": "citizen",
+    "display_name": "Synthetic Citizen",
+    "locality_scopes": [{ "locality_id": "locality.synthetic.001", "level": "district" }]
+  },
+  "alerts": [{
+    "alert_id": "alert.synthetic.001",
+    "information_kind": "official_alert",
+    "version_id": "alert-version.synthetic.002",
+    "version_number": 2,
+    "previous_version_id": "alert-version.synthetic.001",
+    "supersedes_version_id": "alert-version.synthetic.001",
+    "lifecycle": "corrected",
+    "source": {
+      "source_id": "source.synthetic.001",
+      "authority_name": "Synthetic Exercise Authority",
+      "source_uri": "https://example.invalid/synthetic/alerts/001/v2",
+      "retrieved_at": "2025-01-02T03:06:00Z",
+      "signature_status": "not_provided",
+      "source_message_id": "message.synthetic.002"
+    },
+    "content": "abc",
+    "content_hash": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    "issued_at": "2025-01-02T03:04:00Z",
+    "effective_at": "2025-01-02T03:05:00Z",
+    "expires_at": "2025-01-02T09:05:00Z",
+    "affected_localities": [{ "locality_id": "locality.synthetic.001", "level": "district" }]
+  }],
+  "locality": {
+    "locality": { "locality_id": "locality.synthetic.001", "level": "district" },
+    "name": "Synthetic District",
+    "geometry": { "type": "Polygon", "coordinates": [[[105.0, 10.0], [105.1, 10.0], [105.1, 10.1], [105.0, 10.1], [105.0, 10.0]]] },
+    "dataset_source": {
+      "dataset_id": "dataset.synthetic.001",
+      "version": "version.synthetic.001",
+      "source_uri": "https://example.invalid/synthetic/gis/001",
+      "published_at": "2025-01-01T00:00:00Z"
+    },
+    "updated_at": "2025-01-01T00:00:00Z"
+  },
+  "shelters": [{
+    "shelter_id": "shelter.synthetic.stale.001",
+    "name": "Synthetic Exercise Shelter",
+    "locality": { "locality_id": "locality.synthetic.001", "level": "district" },
+    "official_status": "not_official",
+    "freshness_status": "stale",
+    "verification": {
+      "authority_name": "Synthetic Exercise Authority",
+      "source_uri": "https://example.invalid/synthetic/shelters/001",
+      "verified_at": "2024-12-01T00:00:00Z",
+      "fresh_until": "2024-12-02T00:00:00Z"
+    },
+    "public_location_description": "Synthetic location; not for navigation or real-world use."
+  }]
+}

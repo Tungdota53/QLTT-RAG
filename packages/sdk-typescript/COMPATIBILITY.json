@@ -1,0 +1,16 @@
+{
+  "task": "M1-005",
+  "sdkVersion": "0.1.0",
+  "contractVersion": "0.1.0",
+  "classification": "initial-compatible-release",
+  "sourceDocuments": [
+    "common.openapi.json",
+    "identity.openapi.json",
+    "alerts.openapi.json",
+    "gis.openapi.json",
+    "shelters.openapi.json"
+  ],
+  "consumerImpact": "Generated read-only types and client for the initial contract; no migration required.",
+  "fixturePolicy": "fully-synthetic-deterministic",
+  "laterBehavior": false
+}
